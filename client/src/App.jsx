@@ -1,14 +1,15 @@
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import HomePage from './pages/HomePage';
+import SearchPage from './pages/SearchPage';
+import ProductDetails from './pages/ProductDetails';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        {/* You can easily add more routes here later, like:
-            <Route path="/product/:slug" element={<ProductDetails />} /> 
-        */}
+        <Route path="/search" element={<SearchPage />} />
+        <Route path="/product/:id" element={<ProductDetails />} />
       </Routes>
     </BrowserRouter>
   );

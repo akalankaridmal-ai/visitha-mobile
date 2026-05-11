@@ -1,10 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import axios from 'axios';
+import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [checked, setChecked] = useState([]);
+  const navigate = useNavigate();
 
+  // 1. Fetch all categories for the sidebar
+  const getAllCategory = async () => {
+    try {
+      const { data } = await axios.get("http://localhost:8080/api/v1/category/get-category");
+      if (data?.success) {
+        setCategories(data?.category);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // 2. Fetch all products (Initial load or when filters are cleared)
   const getAllProducts = async () => {
     try {
       const { data } = await axios.get('http://localhost:8080/api/v1/product/get-product');
@@ -16,9 +33,45 @@ const HomePage = () => {
     }
   };
 
+  // 3. Filter logic: Add/Remove category/condition from state
+  const handleFilter = (value, id) => {
+    let all = [...checked];
+    if (value) {
+      all.push(id);
+    } else {
+      all = all.filter((c) => c !== id);
+    }
+    setChecked(all);
+  };
+
+  // 4. Fetch filtered products from Backend
+  const filterProduct = async () => {
+    try {
+      const { data } = await axios.post("http://localhost:8080/api/v1/product/product-filters", {
+        checked,
+        radio: [], 
+      });
+      if (data?.success) {
+        setProducts(data.products);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // Initial Load
   useEffect(() => {
-    getAllProducts();
+    getAllCategory();
   }, []);
+
+  // Lifecycle: Trigger filter whenever 'checked' state changes
+  useEffect(() => {
+    if (checked.length > 0) {
+      filterProduct();
+    } else {
+      getAllProducts();
+    }
+  }, [checked]);
 
   return (
     <Layout>
@@ -29,16 +82,48 @@ const HomePage = () => {
             <div className="card shadow-sm border-0 p-3 mb-4">
               <h5 className="fw-bold border-bottom pb-2 mb-3">Filter By</h5>
               
+              {/* Condition Filter */}
               <div className="mb-4">
                 <h6 className="text-muted small fw-bold text-uppercase mb-3">Condition</h6>
                 <div className="form-check my-2">
-                  <input className="form-check-input" type="checkbox" id="brandNew" />
+                  <input 
+                    className="form-check-input" 
+                    type="checkbox" 
+                    id="brandNew" 
+                    checked={checked.includes("New")}
+                    onChange={(e) => handleFilter(e.target.checked, "New")} 
+                  />
                   <label className="form-check-label" htmlFor="brandNew">Brand New</label>
                 </div>
                 <div className="form-check my-2">
-                  <input className="form-check-input" type="checkbox" id="used" />
+                  <input 
+                    className="form-check-input" 
+                    type="checkbox" 
+                    id="used" 
+                    checked={checked.includes("Used")}
+                    onChange={(e) => handleFilter(e.target.checked, "Used")} 
+                  />
                   <label className="form-check-label" htmlFor="used">Used Mobiles</label>
                 </div>
+              </div>
+
+              {/* Dynamic Categories Filter */}
+              <div className="mb-4">
+                <h6 className="text-muted small fw-bold text-uppercase mb-3">Categories</h6>
+                {categories?.map((c) => (
+                  <div className="form-check my-2" key={c._id}>
+                    <input 
+                      className="form-check-input" 
+                      type="checkbox" 
+                      id={`cat-${c._id}`}
+                      checked={checked.includes(c._id)}
+                      onChange={(e) => handleFilter(e.target.checked, c._id)}
+                    />
+                    <label className="form-check-label" htmlFor={`cat-${c._id}`}>
+                      {c.name}
+                    </label>
+                  </div>
+                ))}
               </div>
 
               <div>
@@ -48,6 +133,12 @@ const HomePage = () => {
                   <option value="apple">Apple</option>
                   <option value="samsung">Samsung</option>
                 </select>
+                <button 
+                  className="btn btn-danger btn-sm w-100 mt-4" 
+                  onClick={() => setChecked([])}
+                >
+                  RESET FILTERS
+                </button>
               </div>
             </div>
           </div>
@@ -76,14 +167,20 @@ const HomePage = () => {
                     </div>
                     <div className="card-body">
                       <div className="d-flex justify-content-between align-items-start">
-                        <h6 className="card-title fw-bold mb-1">{p.name}</h6>
-                        <span className={`badge ${p.category === 'New' ? 'bg-success' : 'bg-warning text-dark'}`}>
-                          {p.category}
+                        <h6 className="card-title fw-bold mb-1 text-truncate" style={{maxWidth: '150px'}}>{p.name}</h6>
+                        <span className={`badge bg-info text-dark`}>
+                          {p.category?.name || "Mobile"}
                         </span>
                       </div>
                       <p className="text-muted extra-small mb-2">{p.brand}</p>
-                      <h5 className="text-primary fw-bold mb-3">LKR {p.price.toLocaleString()}</h5>
-                      <button className="btn btn-dark w-100">View Details</button>
+                      <h5 className="text-primary fw-bold mb-3">LKR {p.price?.toLocaleString()}</h5>
+                      {/* Updated Button */}
+                      <button 
+                        className="btn btn-dark w-100" 
+                        onClick={() => navigate(`/product/${p._id}`)}
+                      >
+                        View Details
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -92,7 +189,7 @@ const HomePage = () => {
 
             {products.length === 0 && (
               <div className="text-center mt-5 p-5 bg-light rounded">
-                <p className="text-muted h4">No phones found. Try adding one via Postman!</p>
+                <p className="text-muted h4">No phones found matching these filters.</p>
               </div>
             )}
           </div>

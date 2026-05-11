@@ -1,7 +1,26 @@
 import React from 'react';
 import { ShoppingCart, Smartphone, Search } from 'lucide-react';
+import { useSearch } from "../context/search";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
+  const [values, setValues] = useSearch();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const { data } = await axios.get(
+        `http://localhost:8080/api/v1/product/search/${values.keyword}`
+      );
+      setValues({ ...values, results: data });
+      navigate("/search"); 
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow">
       <div className="container-fluid px-lg-5">
@@ -16,13 +35,15 @@ const Header = () => {
         
         <div className="collapse navbar-collapse" id="navbarMain">
           {/* SEARCH BAR IN MIDDLE */}
-          <form className="d-flex mx-auto col-lg-5 mt-3 mt-lg-0">
+          <form className="d-flex mx-auto col-lg-5 mt-3 mt-lg-0" onSubmit={handleSubmit}>
             <div className="input-group w-100">
               <input 
                 className="form-control border-0" 
                 type="search" 
                 placeholder="Search phones (e.g. iPhone 14)..." 
                 aria-label="Search" 
+                value={values.keyword}
+                onChange={(e) => setValues({ ...values, keyword: e.target.value })}
               />
               <button className="btn btn-primary" type="submit">
                 <Search size={18} />
