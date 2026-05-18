@@ -4,13 +4,15 @@ import dotenv from 'dotenv';
 import colors from 'colors';
 import cors from 'cors';
 import connectDB from './config/db.js';
-import productRoutes from "./routes/productRoutes.js";
 
+// Route imports
+import productRoutes from "./routes/productRoutes.js";
+import authRoutes from "./routes/authRoute.js"; 
 
 // Configure environment variables
 dotenv.config();
 
-// Database connection (We will create this file next)
+// Database connection
 connectDB();
 
 const app = express();
@@ -18,7 +20,10 @@ const app = express();
 // Middlewares
 app.use(cors());
 app.use(express.json()); // Allows us to send JSON data
-app.use("/api/v1/product", productRoutes);
+
+// API Routes
+app.use("/api/v1/auth", authRoutes);       // Auth module endpoints
+app.use("/api/v1/product", productRoutes);   // Product module endpoints
 
 // Base Route
 app.get('/', (req, res) => {

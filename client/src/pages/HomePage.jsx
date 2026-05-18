@@ -2,14 +2,19 @@ import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
+import { useCart } from "../context/cart";
+import toast from "react-hot-toast";
 
 const HomePage = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [checked, setChecked] = useState([]);
   const navigate = useNavigate();
+  
+  // 1. Initialized cart context logic state hook
+  const [cart, setCart] = useCart();
 
-  // 1. Fetch all categories for the sidebar
+  // Fetch all categories for the sidebar
   const getAllCategory = async () => {
     try {
       const { data } = await axios.get("http://localhost:8080/api/v1/category/get-category");
@@ -21,7 +26,7 @@ const HomePage = () => {
     }
   };
 
-  // 2. Fetch all products (Initial load or when filters are cleared)
+  // Fetch all products (Initial load or when filters are cleared)
   const getAllProducts = async () => {
     try {
       const { data } = await axios.get('http://localhost:8080/api/v1/product/get-product');
@@ -33,7 +38,7 @@ const HomePage = () => {
     }
   };
 
-  // 3. Filter logic: Add/Remove category/condition from state
+  // Filter logic: Add/Remove category/condition from state
   const handleFilter = (value, id) => {
     let all = [...checked];
     if (value) {
@@ -44,7 +49,7 @@ const HomePage = () => {
     setChecked(all);
   };
 
-  // 4. Fetch filtered products from Backend
+  // Fetch filtered products from Backend
   const filterProduct = async () => {
     try {
       const { data } = await axios.post("http://localhost:8080/api/v1/product/product-filters", {
@@ -165,22 +170,40 @@ const HomePage = () => {
                         }}
                       />
                     </div>
-                    <div className="card-body">
-                      <div className="d-flex justify-content-between align-items-start">
-                        <h6 className="card-title fw-bold mb-1 text-truncate" style={{maxWidth: '150px'}}>{p.name}</h6>
-                        <span className={`badge bg-info text-dark`}>
-                          {p.category?.name || "Mobile"}
-                        </span>
+                    <div className="card-body d-flex flex-column justify-content-between">
+                      <div>
+                        <div className="d-flex justify-content-between align-items-start">
+                          <h6 className="card-title fw-bold mb-1 text-truncate" style={{maxWidth: '150px'}}>{p.name}</h6>
+                          <span className="badge bg-info text-dark">
+                            {p.category?.name || "Mobile"}
+                          </span>
+                        </div>
+                        <p className="text-muted extra-small mb-2">{p.brand}</p>
+                        <h5 className="text-primary fw-bold mb-3">LKR {p.price?.toLocaleString()}</h5>
                       </div>
-                      <p className="text-muted extra-small mb-2">{p.brand}</p>
-                      <h5 className="text-primary fw-bold mb-3">LKR {p.price?.toLocaleString()}</h5>
-                      {/* Updated Button */}
-                      <button 
-                        className="btn btn-dark w-100" 
-                        onClick={() => navigate(`/product/${p._id}`)}
-                      >
-                        View Details
-                      </button>
+                      
+                      {/* --- ACTION BUTTON GROUPS --- */}
+                      <div className="mt-auto">
+                        <button 
+                          className="btn btn-dark w-100 mb-2" 
+                          onClick={() => navigate(`/product/${p._id}`)}
+                        >
+                          View Details
+                        </button>
+                        
+                        {/* 2. Added mapping choices click handler button */}
+                        <button 
+                          className="btn btn-warning w-100 fw-bold text-dark"
+                          onClick={() => {
+                            const updatedCart = [...cart, p];
+                            setCart(updatedCart);
+                            localStorage.setItem("cart", JSON.stringify(updatedCart));
+                            toast.success("Phone added to your cart successfully!");
+                          }}
+                        >
+                          Add to Cart
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
