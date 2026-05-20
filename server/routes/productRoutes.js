@@ -1,4 +1,3 @@
-// server/routes/productRoutes.js
 import express from "express";
 import { 
   createProductController, 
@@ -13,7 +12,7 @@ import formidable from "express-formidable";
 const router = express.Router();
 
 // routes
-router.post("/create-product", formidable(), createProductController); // Keeps only this route variant
+router.post("/create-product", formidable(), createProductController);
 router.get("/get-product", getProductController);
 router.get("/product-photo/:pid", productPhotoController);
 router.get("/search/:keyword", searchProductController);
