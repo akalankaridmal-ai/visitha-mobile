@@ -29,11 +29,8 @@ function App() {
               <Route path="/dashboard/admin" element={<AdminDashboard />} />
               <Route path="/dashboard/admin/create-product" element={<CreateProduct />} />
               <Route path="/dashboard/admin/products" element={<Products />} />
-              
-              {/* Register the missing route paths below */}
               <Route path="/dashboard/admin/create-category" element={<CreateCategory />} />
               <Route path="/dashboard/admin/orders" element={<AdminOrders />} />
-
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/cart" element={<CartPage />} />
