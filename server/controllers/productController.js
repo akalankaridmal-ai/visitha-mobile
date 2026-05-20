@@ -1,4 +1,3 @@
-// server/controllers/productController.js
 import productModel from "../models/productModel.js";
 import slugify from "slugify";
 import fs from "fs";
