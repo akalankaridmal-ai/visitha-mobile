@@ -1,11 +1,8 @@
-// server/server.js
 import express from 'express';
 import dotenv from 'dotenv';
 import colors from 'colors';
 import cors from 'cors';
 import connectDB from './config/db.js';
-
-// Route imports
 import productRoutes from "./routes/productRoutes.js";
 import authRoutes from "./routes/authRoute.js"; 
 
